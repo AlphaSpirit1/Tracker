@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracker Pro - Material Order Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2080c0;
+            --primary-dark: #1a5f96;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --gray-light: #ecf0f1;
+            --gray-dark: #2c3e50;
+            --bg-light: #f8f9fa;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #ecf0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 30px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Page Visibility */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: var(--bg-light);
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(32, 128, 192, 0.1);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Button Styles */
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 128, 192, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-light);
+            color: var(--text-primary);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-info {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #2980b9;
+        }
+
+        /* Row Layout */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Order Item */
+        .order-item {
+            background-color: var(--bg-light);
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .order-item.delivered {
+            opacity: 0.7;
+            border-left-color: var(--success-color);
+        }
+
+        .order-item-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .order-item-content p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .order-item-delete {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .order-item-delete:hover {
+            background-color: #c0392b;
+        }
+
+        /* Group Header */
+        .supplier-group {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .supplier-group:last-child {
+            border-bottom: none;
+        }
+
+        .supplier-header {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Stats Table */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .stats-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* Activity Log */
+        .activity-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .activity-message {
+            color: var(--text-primary);
+            margin-top: 3px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Message Box */
+        .message-box {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-cancel {
+            background-color: var(--gray-light);
+            color: var(--text-primary);
+        }
+
+        .modal-btn-cancel:hover {
+            background-color: var(--border-color);
+        }
+
+        .modal-btn-add {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-btn-add:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Settings List */
+        .settings-list {
+            list-style: none;
+        }
+
+        .settings-item {
+            background-color: var(--bg-light);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .settings-item-remove {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .settings-item-remove:hover {
+            background-color: #c0392b;
+        }
+
+        /* Top Button Bar */
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .top-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>📦 Order Tracker Pro</h1>
+            <p>Prevent duplicates • Track inventory • Manage orders efficiently</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Page -->
+        <div id="mainPage" class="page active">
+            <div class="top-buttons">
+                <button class="btn-info" onclick="goToSettings('supplier')">➕ Add/Edit Suppliers</button>
+                <button class="btn-info" onclick="goToSettings('product')">➕ Add/Edit Products</button>
+            </div>
+
+            <div class="main-grid">
+                <!-- Add Order Section -->
+                <div class="card">
+                    <h2>Add New Order</h2>
+                    
+                    <div class="form-group">
+                        <label>Partner *</label>
+                        <select id="partner">
+                            <option value="">Select Partner</option>
+                            <option value="Partner A">Partner A</option>
+                            <option value="Partner B">Partner B</option>
+                            <option value="Partner C">Partner C</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Supplier Name *</label>
+                        <select id="supplier" onchange="updateProductList()">
+                            <option value="">Select Supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Product *</label>
+                        <select id="product">
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Quantity *</label>
+                            <input type="number" id="quantity" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Unit *</label>
+                            <select id="unit">
+                                <option value="">Select Unit</option>
+                                <option value="bags">bags</option>
+                                <option value="meters">meters</option>
+                                <option value="liters">liters</option>
+                                <option value="pieces">pieces</option>
+                                <option value="kg">kg</option>
+                                <option value="tons">tons</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="notes" placeholder="Additional details..."></textarea>
+                    </div>
+
+                    <button class="btn-primary" onclick="addOrder()">+ Add to Order Cart</button>
+                    <button class="btn-secondary" onclick="resetForm()">Clear Form</button>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="card">
+                    <h2>Summary</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalItems">0</div>
+                            <div class="stat-label">Total Items</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalSuppliers">0</div>
+                            <div class="stat-label">Suppliers</div>
+                        </div>
+                    </div>
+
+                    <table class="stats-table">
+                        <tr>
+                            <td>Pending Orders</td>
+                            <td id="pendingCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>Ordered</td>
+                            <td id="orderedCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>Delivered</td>
+                            <td id="deliveredCount">0</td>
+                        </tr>
+                    </table>
+
+                    <h2 style="margin-top: 25px;">Activity Log</h2>
+                    <div id="activityLog" style="min-height: 150px;">
+                        <div class="empty-state">No activity yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Display -->
+            <div class="card">
+                <h2>Today's Orders by Supplier</h2>
+                <div id="ordersList" style="min-height: 200px;">
+                    <div class="empty-state">No orders yet. Add your first order above!</div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Message -->
+            <div class="card" id="whatsappSection" style="display: none;">
+                <h2>Daily WhatsApp Report</h2>
+                <div class="message-box" id="whatsappMessage"></div>
+                <button class="btn-primary" onclick="copyMessage()">📋 Copy Message</button>
+            </div>
+
+            <!-- Clear All Button -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn-secondary" onclick="clearAllOrders()" id="clearBtn" style="max-width: 300px; display: none;">🗑️ Clear All Orders</button>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <div class="card">
+                <button class="btn-secondary" onclick="goToMain()" style="margin-bottom: 20px;">← Back to Orders</button>
+                
+                <h2 id="settingsTitle">Manage Suppliers</h2>
+
+                <div class="form-group">
+                    <label id="settingsLabel">New Supplier Name</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="settingsInput" placeholder="Enter name" style="flex: 1;">
+                        <button class="btn-primary" onclick="addSettingsItem()" style="width: 120px;">Add</button>
+                    </div>
+                </div>
+
+                <h2 style="margin-top: 25px; margin-bottom: 15px;">Current List</h2>
+                <ul class="settings-list" id="settingsList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate Modal -->
+    <div class="modal" id="duplicateModal">
+        <div class="modal-content">
+            <div class="modal-title">⚠️ Duplicate Order Detected</div>
+            <div class="modal-body">
+                <span id="dupProduct">Product</span> from <span id="dupSupplier">Supplier</span> is already in your cart with <span id="dupQty">0</span> units.
+                <br><br>
+                Do you want to add more?
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeDuplicateModal()">Cancel</button>
+                <button class="modal-btn modal-btn-add" onclick="mergeDuplicate()">Add More</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Order Tracker Pro v2.0 | All data stored locally in your browser | No internet required</p>
+    </footer>
+
+    <script>
+        // Configuration - EDIT THESE
+        let PRODUCTS = ['Cement', 'Steel Rods', 'Paint', 'Bricks', 'Sand', 'Gravel', 'Tiles', 'Lumber'];
+        let SUPPLIERS = ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'];
+        const UNITS = ['bags', 'meters', 'liters', 'pieces', 'kg', 'tons'];
+        const PARTNERS = ['Partner A', 'Partner B', 'Partner C'];
+
+        // Supplier to products mapping
+        let supplierProducts = {
+            'ABC Hardware': ['Cement', 'Steel Rods', 'Bricks'],
+            'XYZ Supplies': ['Paint', 'Lumber', 'Tiles'],
+            'BuildCo Materials': ['Sand', 'Gravel', 'Cement'],
+            'ProBuild Store': ['Cement', 'Bricks', 'Tiles', 'Paint']
+        };
+
+        // State
+        let orders = [];
+        let activityLog = [];
+        let duplicateData = null;
+        let currentSettingsType = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            populateSupplierDropdown();
+            updateProductList();
+            updateUI();
+        });
+
+        // PAGE NAVIGATION
+        function goToSettings(type) {
+            currentSettingsType = type;
+            document.getElementById('mainPage').classList.remove('active');
+            document.getElementById('settingsPage').classList.add('active');
+
+            if (type === 'supplier') {
+                document.getElementById('settingsTitle').textContent = 'Manage Suppliers';
+                document.getElementById('settingsLabel').textContent = 'New Supplier Name';
+                document.getElementById('settingsInput').placeholder = 'Enter supplier name';
+                loadSettingsList('supplier');
+            } else {
+                document.getElementById('settingsTitle').textContent = 'Manage Products';
+                document.getElementById('settingsLabel').textContent = 'New Product Name';
+                document.getElementById('settingsInput').placeholder = 'Enter product name';
+                loadSettingsList('product');
+            }
+        }
+
+        function goToMain() {
+            document.getElementById('settingsPage').classList.remove('active');
+            document.getElementById('mainPage').classList.add('active');
+            currentSettingsType = null;
+            populateSupplierDropdown();
+            updateProductList();
+            updateUI();
+        }
+
+        function loadSettingsList(type) {
+            const list = document.getElementById('settingsList');
+            let items = type === 'supplier' ? SUPPLIERS : PRODUCTS;
+            
+            list.innerHTML = items.map(item => `
+                <li class="settings-item">
+                    <span class="settings-item-name">${item}</span>
+                    <button class="settings-item-remove" onclick="removeSettingsItem('${item}', '${type}')">Remove</button>
+                </li>
+            `).join('');
+        }
+
+        function addSettingsItem() {
+            const input = document.getElementById('settingsInput');
+            const newItem = input.value.trim();
+
+            if (!newItem) {
+                alert('Please enter a name');
+                return;
+            }
+
+            if (currentSettingsType === 'supplier') {
+                if (SUPPLIERS.includes(newItem)) {
+                    alert('Supplier already exists');
+                    return;
+                }
+                SUPPLIERS.push(newItem);
+                supplierProducts[newItem] = [];
+                addActivity(`Added supplier: ${newItem}`);
+            } else {
+                if (PRODUCTS.includes(newItem)) {
+                    alert('Product already exists');
+                    return;
+                }
+                PRODUCTS.push(newItem);
+                addActivity(`Added product: ${newItem}`);
+            }
+
+            input.value = '';
+            loadSettingsList(currentSettingsType);
+            saveToStorage();
+        }
+
+        function removeSettingsItem(item, type) {
+            if (type === 'supplier') {
+                SUPPLIERS = SUPPLIERS.filter(s => s !== item);
+                delete supplierProducts[item];
+                addActivity(`Removed supplier: ${item}`);
+            } else {
+                PRODUCTS = PRODUCTS.filter(p => p !== item);
+                addActivity(`Removed product: ${item}`);
+            }
+            loadSettingsList(type);
+            saveToStorage();
+        }
+
+        // POPULATE DROPDOWNS
+        function populateSupplierDropdown() {
+            const select = document.getElementById('supplier');
+            const current = select.value;
+            select.innerHTML = '<option value="">Select Supplier</option>' +
+                SUPPLIERS.map(s => `<option value="${s}">${s}</option>`).join('');
+            select.value = current;
+        }
+
+        function updateProductList() {
+            const supplier = document.getElementById('supplier').value;
+            const select = document.getElementById('product');
+            const current = select.value;
+
+            if (!supplier) {
+                select.innerHTML = '<option value="">Select Supplier First</option>';
+                return;
+            }
+
+            const products = supplierProducts[supplier] || [];
+            select.innerHTML = '<option value="">Select Product</option>' +
+                products.map(p => `<option value="${p}">${p}</option>`).join('');
+            
+            if (products.includes(current)) {
+                select.value = current;
+            } else {
+                select.value = '';
+            }
+        }
+
+        function addOrder() {
+            const partner = document.getElementById('partner').value;
+            const supplier = document.getElementById('supplier').value;
+            const product = document.getElementById('product').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const unit = document.getElementById('unit').value;
+            const notes = document.getElementById('notes').value;
+
+            if (!partner || !supplier || !product || !unit) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Check for duplicate - IGNORE PARTNER
+            const isDup = orders.some(o => 
+                o.supplier.toLowerCase() === supplier.toLowerCase() &&
+                o.product.toLowerCase() === product.toLowerCase() &&
+                o.status !== 'delivered'
+            );
+
+            if (isDup) {
+                const dup = orders.find(o => 
+                    o.supplier.toLowerCase() === supplier.toLowerCase() &&
+                    o.product.toLowerCase() === product.toLowerCase() &&
+                    o.status !== 'delivered'
+                );
+                
+                document.getElementById('dupProduct').textContent = product;
+                document.getElementById('dupSupplier').textContent = supplier;
+                document.getElementById('dupQty').textContent = dup.quantity;
+                
+                duplicateData = {
+                    partner, supplier, product, quantity, unit, notes,
+                    duplicateId: dup.id
+                };
+                
+                document.getElementById('duplicateModal').classList.add('active');
+                return;
+            }
+
+            const newOrder = {
+                id: Date.now(),
+                partner,
+                supplier,
+                product,
+                quantity,
+                unit,
+                notes,
+                status: 'pending',
+                createdAt: new Date().toLocaleString('en-IN')
+            };
+
+            orders.push(newOrder);
+            addActivity(`Added ${quantity} ${unit} of ${product} from ${supplier}`);
+            resetForm();
+            updateUI();
+        }
+
+        function mergeDuplicate() {
+            if (!duplicateData) return;
+
+            const dup = orders.find(o => o.id === duplicateData.duplicateId);
+            if (dup) {
+                dup.quantity += duplicateData.quantity;
+                addActivity(`Added ${duplicateData.quantity} ${duplicateData.unit} to existing ${duplicateData.supplier} order`);
+            }
+
+            closeDuplicateModal();
+            resetForm();
+            updateUI();
+        }
+
+        function closeDuplicateModal() {
+            document.getElementById('duplicateModal').classList.remove('active');
+            duplicateData = null;
+        }
+
+        function deleteOrder(id) {
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                orders = orders.filter(o => o.id !== id);
+                addActivity(`Removed ${order.product} from ${order.supplier}`);
+                updateUI();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('partner').value = '';
+            document.getElementById('supplier').value = '';
+            document.getElementById('product').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('unit').value = '';
+            document.getElementById('notes').value = '';
+            updateProductList();
+        }
+
+        function clearAllOrders() {
+            if (confirm('Are you sure you want to clear all orders?')) {
+                orders = [];
+                addActivity('All orders cleared');
+                updateUI();
+            }
+        }
+
+        function addActivity(message) {
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            activityLog.unshift({message, time});
+            if (activityLog.length > 5) activityLog.pop();
+        }
+
+        function generateWhatsAppMessage() {
+            const grouped = {};
+            orders.forEach(o => {
+                if (!grouped[o.supplier]) grouped[o.supplier] = [];
+                grouped[o.supplier].push(o);
+            });
+
+            let msg = `📦 DAILY MATERIAL ORDER - ${new Date().toLocaleDateString('en-IN')}\n\n`;
+            
+            for (const [sup, supOrders] of Object.entries(grouped)) {
+                msg += `${sup}\n`;
+                supOrders.forEach(o => {
+                    const notes = o.notes ? ` (${o.notes})` : '';
+                    msg += `• ${o.product}: ${o.quantity} ${o.unit}${notes}\n`;
+                });
+                msg += '\n';
+            }
+
+            msg += `Total: ${orders.length} items from ${Object.keys(grouped).length} supplier(s)\n`;
+            msg += `---\n📱 Order Tracker Pro\n⏰ ${new Date().toLocaleString('en-IN')}`;
+
+            return msg;
+        }
+
+        function copyMessage() {
+            const msg = generateWhatsAppMessage();
+            navigator.clipboard.writeText(msg).then(() => {
+                alert('Message copied to clipboard!');
+            });
+        }
+
+        function updateUI() {
+            // Update summary
+            const suppliers = new Set(orders.map(o => o.supplier)).size;
+            document.getElementById('totalItems').textContent = orders.length;
+            document.getElementById('totalSuppliers').textContent = suppliers;
+            document.getElementById('pendingCount').textContent = orders.filter(o => o.status === 'pending').length;
+            document.getElementById('orderedCount').textContent = orders.filter(o => o.status === 'ordered').length;
+            document.getElementById('deliveredCount').textContent = orders.filter(o => o.status === 'delivered').length;
+
+            // Update orders display - GROUPED BY SUPPLIER ONLY
+            if (orders.length === 0) {
+                document.getElementById('ordersList').innerHTML = '<div class="empty-state">No orders yet. Add your first order above!</div>';
+                document.getElementById('whatsappSection').style.display = 'none';
+                document.getElementById('clearBtn').style.display = 'none';
+            } else {
+                const grouped = {};
+                orders.forEach(o => {
+                    if (!grouped[o.supplier]) grouped[o.supplier] = [];
+                    grouped[o.supplier].push(o);
+                });
+
+                let html = '';
+                for (const [sup, supOrders] of Object.entries(grouped)) {
+                    html += `<div class="supplier-group">
+                        <div class="supplier-header">📍 ${sup}</div>`;
+                    supOrders.forEach(o => {
+                        const notes = o.notes ? `<p>📝 ${o.notes}</p>` : '';
+                        html += `<div class="order-item ${o.status === 'delivered' ? 'delivered' : ''}">
+                            <div class="order-item-content">
+                                <h4>${o.product}</h4>
+                                <p>${o.quantity} ${o.unit}</p>
+                                ${notes}
+                            </div>
+                            <button class="order-item-delete" onclick="deleteOrder(${o.id})">✕</button>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+                document.getElementById('ordersList').innerHTML = html;
+                
+                // Update WhatsApp section
+                document.getElementById('whatsappMessage').textContent = generateWhatsAppMessage();
+                document.getElementById('whatsappSection').style.display = 'block';
+                document.getElementById('clearBtn').style.display = 'block';
+            }
+
+            // Update activity log
+            if (activityLog.length === 0) {
+                document.getElementById('activityLog').innerHTML = '<div class="empty-state">No activity yet</div>';
+            } else {
+                let html = '';
+                activityLog.forEach(log => {
+                    html += `<div class="activity-item">
+                        <div class="activity-time">${log.time}</div>
+                        <div class="activity-message">${log.message}</div>
+                    </div>`;
+                });
+                document.getElementById('activityLog').innerHTML = html;
+            }
+
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('activityLog', JSON.stringify(activityLog));
+            localStorage.setItem('suppliers', JSON.stringify(SUPPLIERS));
+            localStorage.setItem('products', JSON.stringify(PRODUCTS));
+            localStorage.setItem('supplierProducts', JSON.stringify(supplierProducts));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('orders');
+            const activity = localStorage.getItem('activityLog');
+            const suppliers = localStorage.getItem('suppliers');
+            const products = localStorage.getItem('products');
+            const supplierProds = localStorage.getItem('supplierProducts');
+
+            if (saved) orders = JSON.parse(saved);
+            if (activity) activityLog = JSON.parse(activity);
+            if (suppliers) SUPPLIERS = JSON.parse(suppliers);
+            if (products) PRODUCTS = JSON.parse(products);
+            if (supplierProds) supplierProducts = JSON.parse(supplierProds);
+        }
+    </script>
+</body>
+</html>
