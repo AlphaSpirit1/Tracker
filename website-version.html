@@ -70,6 +70,15 @@
             }
         }
 
+        /* Page Visibility */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
         /* Card Styles */
         .card {
             background: white;
@@ -174,6 +183,15 @@
 
         .btn-danger:hover {
             background-color: #c0392b;
+        }
+
+        .btn-info {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #2980b9;
         }
 
         /* Row Layout */
@@ -421,6 +439,53 @@
             background-color: var(--primary-dark);
         }
 
+        /* Settings List */
+        .settings-list {
+            list-style: none;
+        }
+
+        .settings-item {
+            background-color: var(--bg-light);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .settings-item-remove {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .settings-item-remove:hover {
+            background-color: #c0392b;
+        }
+
+        /* Top Button Bar */
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .top-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             header h1 {
@@ -433,6 +498,10 @@
 
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .top-buttons {
+                flex-direction: column;
             }
         }
 
@@ -455,124 +524,146 @@
     </header>
 
     <div class="container">
-        <div class="main-grid">
-            <!-- Add Order Section -->
-            <div class="card">
-                <h2>Add New Order</h2>
-                
-                <div class="form-group">
-                    <label>Partner *</label>
-                    <select id="partner">
-                        <option value="">Select Partner</option>
-                        <option value="Partner A">Partner A</option>
-                        <option value="Partner B">Partner B</option>
-                        <option value="Partner C">Partner C</option>
-                    </select>
-                </div>
+        <!-- Main Page -->
+        <div id="mainPage" class="page active">
+            <div class="top-buttons">
+                <button class="btn-info" onclick="goToSettings('supplier')">➕ Add/Edit Suppliers</button>
+                <button class="btn-info" onclick="goToSettings('product')">➕ Add/Edit Products</button>
+            </div>
 
-                <div class="form-group">
-                    <label>Supplier Name *</label>
-                    <input type="text" id="supplier" placeholder="e.g., ABC Hardware">
-                </div>
-
-                <div class="form-group">
-                    <label>Product *</label>
-                    <select id="product">
-                        <option value="">Select Product</option>
-                        <option value="Cement">Cement</option>
-                        <option value="Steel Rods">Steel Rods</option>
-                        <option value="Paint">Paint</option>
-                        <option value="Bricks">Bricks</option>
-                        <option value="Sand">Sand</option>
-                        <option value="Gravel">Gravel</option>
-                        <option value="Tiles">Tiles</option>
-                        <option value="Lumber">Lumber</option>
-                    </select>
-                </div>
-
-                <div class="row">
+            <div class="main-grid">
+                <!-- Add Order Section -->
+                <div class="card">
+                    <h2>Add New Order</h2>
+                    
                     <div class="form-group">
-                        <label>Quantity *</label>
-                        <input type="number" id="quantity" value="1" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>Unit *</label>
-                        <select id="unit">
-                            <option value="">Select Unit</option>
-                            <option value="bags">bags</option>
-                            <option value="meters">meters</option>
-                            <option value="liters">liters</option>
-                            <option value="pieces">pieces</option>
-                            <option value="kg">kg</option>
-                            <option value="tons">tons</option>
+                        <label>Partner *</label>
+                        <select id="partner">
+                            <option value="">Select Partner</option>
+                            <option value="Partner A">Partner A</option>
+                            <option value="Partner B">Partner B</option>
+                            <option value="Partner C">Partner C</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label>Supplier Name *</label>
+                        <select id="supplier" onchange="updateProductList()">
+                            <option value="">Select Supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Product *</label>
+                        <select id="product">
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label>Quantity *</label>
+                            <input type="number" id="quantity" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Unit *</label>
+                            <select id="unit">
+                                <option value="">Select Unit</option>
+                                <option value="bags">bags</option>
+                                <option value="meters">meters</option>
+                                <option value="liters">liters</option>
+                                <option value="pieces">pieces</option>
+                                <option value="kg">kg</option>
+                                <option value="tons">tons</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <textarea id="notes" placeholder="Additional details..."></textarea>
+                    </div>
+
+                    <button class="btn-primary" onclick="addOrder()">+ Add to Order Cart</button>
+                    <button class="btn-secondary" onclick="resetForm()">Clear Form</button>
                 </div>
+
+                <!-- Summary Section -->
+                <div class="card">
+                    <h2>Summary</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalItems">0</div>
+                            <div class="stat-label">Total Items</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="totalSuppliers">0</div>
+                            <div class="stat-label">Suppliers</div>
+                        </div>
+                    </div>
+
+                    <table class="stats-table">
+                        <tr>
+                            <td>Pending Orders</td>
+                            <td id="pendingCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>Ordered</td>
+                            <td id="orderedCount">0</td>
+                        </tr>
+                        <tr>
+                            <td>Delivered</td>
+                            <td id="deliveredCount">0</td>
+                        </tr>
+                    </table>
+
+                    <h2 style="margin-top: 25px;">Activity Log</h2>
+                    <div id="activityLog" style="min-height: 150px;">
+                        <div class="empty-state">No activity yet</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Display -->
+            <div class="card">
+                <h2>Today's Orders by Supplier</h2>
+                <div id="ordersList" style="min-height: 200px;">
+                    <div class="empty-state">No orders yet. Add your first order above!</div>
+                </div>
+            </div>
+
+            <!-- WhatsApp Message -->
+            <div class="card" id="whatsappSection" style="display: none;">
+                <h2>Daily WhatsApp Report</h2>
+                <div class="message-box" id="whatsappMessage"></div>
+                <button class="btn-primary" onclick="copyMessage()">📋 Copy Message</button>
+            </div>
+
+            <!-- Clear All Button -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn-secondary" onclick="clearAllOrders()" id="clearBtn" style="max-width: 300px; display: none;">🗑️ Clear All Orders</button>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <div class="card">
+                <button class="btn-secondary" onclick="goToMain()" style="margin-bottom: 20px;">← Back to Orders</button>
+                
+                <h2 id="settingsTitle">Manage Suppliers</h2>
 
                 <div class="form-group">
-                    <label>Notes (Optional)</label>
-                    <textarea id="notes" placeholder="Additional details..."></textarea>
-                </div>
-
-                <button class="btn-primary" onclick="addOrder()">+ Add to Order Cart</button>
-                <button class="btn-secondary" onclick="resetForm()">Clear Form</button>
-            </div>
-
-            <!-- Summary Section -->
-            <div class="card">
-                <h2>Summary</h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-number" id="totalItems">0</div>
-                        <div class="stat-label">Total Items</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="totalSuppliers">0</div>
-                        <div class="stat-label">Suppliers</div>
+                    <label id="settingsLabel">New Supplier Name</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="settingsInput" placeholder="Enter name" style="flex: 1;">
+                        <button class="btn-primary" onclick="addSettingsItem()" style="width: 120px;">Add</button>
                     </div>
                 </div>
 
-                <table class="stats-table">
-                    <tr>
-                        <td>Pending Orders</td>
-                        <td id="pendingCount">0</td>
-                    </tr>
-                    <tr>
-                        <td>Ordered</td>
-                        <td id="orderedCount">0</td>
-                    </tr>
-                    <tr>
-                        <td>Delivered</td>
-                        <td id="deliveredCount">0</td>
-                    </tr>
-                </table>
-
-                <h2 style="margin-top: 25px;">Activity Log</h2>
-                <div id="activityLog" style="min-height: 150px;">
-                    <div class="empty-state">No activity yet</div>
-                </div>
+                <h2 style="margin-top: 25px; margin-bottom: 15px;">Current List</h2>
+                <ul class="settings-list" id="settingsList"></ul>
             </div>
-        </div>
-
-        <!-- Orders Display -->
-        <div class="card">
-            <h2>Today's Orders by Supplier</h2>
-            <div id="ordersList" style="min-height: 200px;">
-                <div class="empty-state">No orders yet. Add your first order above!</div>
-            </div>
-        </div>
-
-        <!-- WhatsApp Message -->
-        <div class="card" id="whatsappSection" style="display: none;">
-            <h2>Daily WhatsApp Report</h2>
-            <div class="message-box" id="whatsappMessage"></div>
-            <button class="btn-primary" onclick="copyMessage()">📋 Copy Message</button>
-        </div>
-
-        <!-- Clear All Button -->
-        <div style="text-align: center; margin: 30px 0;">
-            <button class="btn-secondary" onclick="clearAllOrders()" id="clearBtn" style="max-width: 300px; display: none;">🗑️ Clear All Orders</button>
         </div>
     </div>
 
@@ -593,25 +684,151 @@
     </div>
 
     <footer>
-        <p>Order Tracker Pro v1.0 | All data stored locally in your browser | No internet required</p>
+        <p>Order Tracker Pro v2.0 | All data stored locally in your browser | No internet required</p>
     </footer>
 
     <script>
         // Configuration - EDIT THESE
-        const PRODUCTS = ['Cement', 'Steel Rods', 'Paint', 'Bricks', 'Sand', 'Gravel', 'Tiles', 'Lumber'];
+        let PRODUCTS = ['Cement', 'Steel Rods', 'Paint', 'Bricks', 'Sand', 'Gravel', 'Tiles', 'Lumber'];
+        let SUPPLIERS = ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'];
         const UNITS = ['bags', 'meters', 'liters', 'pieces', 'kg', 'tons'];
         const PARTNERS = ['Partner A', 'Partner B', 'Partner C'];
+
+        // Supplier to products mapping
+        let supplierProducts = {
+            'ABC Hardware': ['Cement', 'Steel Rods', 'Bricks'],
+            'XYZ Supplies': ['Paint', 'Lumber', 'Tiles'],
+            'BuildCo Materials': ['Sand', 'Gravel', 'Cement'],
+            'ProBuild Store': ['Cement', 'Bricks', 'Tiles', 'Paint']
+        };
 
         // State
         let orders = [];
         let activityLog = [];
         let duplicateData = null;
+        let currentSettingsType = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadFromStorage();
+            populateSupplierDropdown();
+            updateProductList();
             updateUI();
         });
+
+        // PAGE NAVIGATION
+        function goToSettings(type) {
+            currentSettingsType = type;
+            document.getElementById('mainPage').classList.remove('active');
+            document.getElementById('settingsPage').classList.add('active');
+
+            if (type === 'supplier') {
+                document.getElementById('settingsTitle').textContent = 'Manage Suppliers';
+                document.getElementById('settingsLabel').textContent = 'New Supplier Name';
+                document.getElementById('settingsInput').placeholder = 'Enter supplier name';
+                loadSettingsList('supplier');
+            } else {
+                document.getElementById('settingsTitle').textContent = 'Manage Products';
+                document.getElementById('settingsLabel').textContent = 'New Product Name';
+                document.getElementById('settingsInput').placeholder = 'Enter product name';
+                loadSettingsList('product');
+            }
+        }
+
+        function goToMain() {
+            document.getElementById('settingsPage').classList.remove('active');
+            document.getElementById('mainPage').classList.add('active');
+            currentSettingsType = null;
+            populateSupplierDropdown();
+            updateProductList();
+            updateUI();
+        }
+
+        function loadSettingsList(type) {
+            const list = document.getElementById('settingsList');
+            let items = type === 'supplier' ? SUPPLIERS : PRODUCTS;
+            
+            list.innerHTML = items.map(item => `
+                <li class="settings-item">
+                    <span class="settings-item-name">${item}</span>
+                    <button class="settings-item-remove" onclick="removeSettingsItem('${item}', '${type}')">Remove</button>
+                </li>
+            `).join('');
+        }
+
+        function addSettingsItem() {
+            const input = document.getElementById('settingsInput');
+            const newItem = input.value.trim();
+
+            if (!newItem) {
+                alert('Please enter a name');
+                return;
+            }
+
+            if (currentSettingsType === 'supplier') {
+                if (SUPPLIERS.includes(newItem)) {
+                    alert('Supplier already exists');
+                    return;
+                }
+                SUPPLIERS.push(newItem);
+                supplierProducts[newItem] = [];
+                addActivity(`Added supplier: ${newItem}`);
+            } else {
+                if (PRODUCTS.includes(newItem)) {
+                    alert('Product already exists');
+                    return;
+                }
+                PRODUCTS.push(newItem);
+                addActivity(`Added product: ${newItem}`);
+            }
+
+            input.value = '';
+            loadSettingsList(currentSettingsType);
+            saveToStorage();
+        }
+
+        function removeSettingsItem(item, type) {
+            if (type === 'supplier') {
+                SUPPLIERS = SUPPLIERS.filter(s => s !== item);
+                delete supplierProducts[item];
+                addActivity(`Removed supplier: ${item}`);
+            } else {
+                PRODUCTS = PRODUCTS.filter(p => p !== item);
+                addActivity(`Removed product: ${item}`);
+            }
+            loadSettingsList(type);
+            saveToStorage();
+        }
+
+        // POPULATE DROPDOWNS
+        function populateSupplierDropdown() {
+            const select = document.getElementById('supplier');
+            const current = select.value;
+            select.innerHTML = '<option value="">Select Supplier</option>' +
+                SUPPLIERS.map(s => `<option value="${s}">${s}</option>`).join('');
+            select.value = current;
+        }
+
+        function updateProductList() {
+            const supplier = document.getElementById('supplier').value;
+            const select = document.getElementById('product');
+            const current = select.value;
+
+            if (!supplier) {
+                select.innerHTML = '<option value="">Select Supplier First</option>';
+                return;
+            }
+
+            const products = supplierProducts[supplier] || [];
+            select.innerHTML = '<option value="">Select Product</option>' +
+                products.map(p => `<option value="${p}">${p}</option>`).join('');
+            
+            if (products.includes(current)) {
+                select.value = current;
+            } else {
+                select.value = '';
+            }
+        }
 
         function addOrder() {
             const partner = document.getElementById('partner').value;
@@ -626,11 +843,10 @@
                 return;
             }
 
-            // Check for duplicate
+            // Check for duplicate - IGNORE PARTNER
             const isDup = orders.some(o => 
                 o.supplier.toLowerCase() === supplier.toLowerCase() &&
                 o.product.toLowerCase() === product.toLowerCase() &&
-                o.partner === partner &&
                 o.status !== 'delivered'
             );
 
@@ -638,7 +854,6 @@
                 const dup = orders.find(o => 
                     o.supplier.toLowerCase() === supplier.toLowerCase() &&
                     o.product.toLowerCase() === product.toLowerCase() &&
-                    o.partner === partner &&
                     o.status !== 'delivered'
                 );
                 
@@ -668,7 +883,7 @@
             };
 
             orders.push(newOrder);
-            addActivity(`Added ${quantity} ${unit} of ${product} from ${supplier} (${partner})`);
+            addActivity(`Added ${quantity} ${unit} of ${product} from ${supplier}`);
             resetForm();
             updateUI();
         }
@@ -708,6 +923,7 @@
             document.getElementById('quantity').value = '1';
             document.getElementById('unit').value = '';
             document.getElementById('notes').value = '';
+            updateProductList();
         }
 
         function clearAllOrders() {
@@ -737,7 +953,7 @@
                 msg += `${sup}\n`;
                 supOrders.forEach(o => {
                     const notes = o.notes ? ` (${o.notes})` : '';
-                    msg += `• ${o.product}: ${o.quantity} ${o.unit} [${o.partner}]${notes}\n`;
+                    msg += `• ${o.product}: ${o.quantity} ${o.unit}${notes}\n`;
                 });
                 msg += '\n';
             }
@@ -764,7 +980,7 @@
             document.getElementById('orderedCount').textContent = orders.filter(o => o.status === 'ordered').length;
             document.getElementById('deliveredCount').textContent = orders.filter(o => o.status === 'delivered').length;
 
-            // Update orders display
+            // Update orders display - GROUPED BY SUPPLIER ONLY
             if (orders.length === 0) {
                 document.getElementById('ordersList').innerHTML = '<div class="empty-state">No orders yet. Add your first order above!</div>';
                 document.getElementById('whatsappSection').style.display = 'none';
@@ -785,7 +1001,7 @@
                         html += `<div class="order-item ${o.status === 'delivered' ? 'delivered' : ''}">
                             <div class="order-item-content">
                                 <h4>${o.product}</h4>
-                                <p>${o.quantity} ${o.unit} • ${o.partner}</p>
+                                <p>${o.quantity} ${o.unit}</p>
                                 ${notes}
                             </div>
                             <button class="order-item-delete" onclick="deleteOrder(${o.id})">✕</button>
@@ -821,13 +1037,23 @@
         function saveToStorage() {
             localStorage.setItem('orders', JSON.stringify(orders));
             localStorage.setItem('activityLog', JSON.stringify(activityLog));
+            localStorage.setItem('suppliers', JSON.stringify(SUPPLIERS));
+            localStorage.setItem('products', JSON.stringify(PRODUCTS));
+            localStorage.setItem('supplierProducts', JSON.stringify(supplierProducts));
         }
 
         function loadFromStorage() {
             const saved = localStorage.getItem('orders');
             const activity = localStorage.getItem('activityLog');
+            const suppliers = localStorage.getItem('suppliers');
+            const products = localStorage.getItem('products');
+            const supplierProds = localStorage.getItem('supplierProducts');
+
             if (saved) orders = JSON.parse(saved);
             if (activity) activityLog = JSON.parse(activity);
+            if (suppliers) SUPPLIERS = JSON.parse(suppliers);
+            if (products) PRODUCTS = JSON.parse(products);
+            if (supplierProds) supplierProducts = JSON.parse(supplierProds);
         }
     </script>
 </body>
