@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Tracker Pro - Material Order Management</title>
+    <title>Tools House - Order Management System</title>
     <style>
         * {
             margin: 0;
@@ -14,6 +14,7 @@
         :root {
             --primary-color: #2080c0;
             --primary-dark: #1a5f96;
+            --primary-light: #3498db;
             --success-color: #27ae60;
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
@@ -42,18 +43,21 @@
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
-            padding: 30px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 35px 0;
+            box-shadow: 0 4px 15px rgba(32, 128, 192, 0.3);
+            border-bottom: 3px solid var(--primary-color);
         }
 
         header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         header p {
-            font-size: 14px;
-            opacity: 0.9;
+            font-size: 15px;
+            opacity: 0.95;
         }
 
         /* Main Grid */
@@ -86,6 +90,7 @@
             padding: 25px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             border: 1px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
         }
 
         .card h2 {
@@ -115,7 +120,7 @@
         textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
@@ -157,17 +162,19 @@
         .btn-primary:hover {
             background-color: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(32, 128, 192, 0.3);
+            box-shadow: 0 4px 12px rgba(32, 128, 192, 0.4);
         }
 
         .btn-secondary {
             background-color: var(--gray-light);
             color: var(--text-primary);
             margin-top: 10px;
+            border: 2px solid var(--primary-color);
         }
 
         .btn-secondary:hover {
-            background-color: var(--border-color);
+            background-color: var(--primary-color);
+            color: white;
         }
 
         .btn-small {
@@ -186,12 +193,12 @@
         }
 
         .btn-info {
-            background-color: #3498db;
+            background-color: var(--primary-color);
             color: white;
         }
 
         .btn-info:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-dark);
         }
 
         /* Row Layout */
@@ -210,7 +217,7 @@
         /* Order Item */
         .order-item {
             background-color: var(--bg-light);
-            border-left: 4px solid var(--warning-color);
+            border-left: 4px solid var(--primary-color);
             padding: 15px;
             border-radius: 4px;
             margin-bottom: 12px;
@@ -281,7 +288,7 @@
         }
 
         .stat-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             padding: 20px;
             border-radius: 8px;
@@ -350,7 +357,7 @@
         /* Message Box */
         .message-box {
             background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--primary-color);
             padding: 15px;
             border-radius: 6px;
             font-family: 'Courier New', monospace;
@@ -389,6 +396,9 @@
             max-width: 400px;
             width: 90%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-top: 4px solid var(--primary-color);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-title {
@@ -424,10 +434,12 @@
         .modal-btn-cancel {
             background-color: var(--gray-light);
             color: var(--text-primary);
+            border: 2px solid var(--primary-color);
         }
 
         .modal-btn-cancel:hover {
-            background-color: var(--border-color);
+            background-color: var(--primary-color);
+            color: white;
         }
 
         .modal-btn-add {
@@ -452,6 +464,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-left: 4px solid var(--primary-color);
         }
 
         .settings-item-name {
@@ -467,6 +480,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            width: auto;
         }
 
         .settings-item-remove:hover {
@@ -489,7 +503,7 @@
         /* Responsive */
         @media (max-width: 768px) {
             header h1 {
-                font-size: 24px;
+                font-size: 28px;
             }
 
             .card {
@@ -512,14 +526,15 @@
             color: var(--text-secondary);
             font-size: 12px;
             margin-top: 40px;
+            border-top: 2px solid var(--primary-color);
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>📦 Order Tracker Pro</h1>
-            <p>Prevent duplicates • Track inventory • Manage orders efficiently</p>
+            <h1>🏗️ Tools House - Order Management</h1>
+            <p>Manage supplier orders efficiently • Track materials • Prevent duplicates</p>
         </div>
     </header>
 
@@ -534,7 +549,7 @@
             <div class="main-grid">
                 <!-- Add Order Section -->
                 <div class="card">
-                    <h2>Add New Order</h2>
+                    <h2>📝 Add New Order</h2>
                     
                     <div class="form-group">
                         <label>Partner *</label>
@@ -584,13 +599,13 @@
                         <textarea id="notes" placeholder="Additional details..."></textarea>
                     </div>
 
-                    <button class="btn-primary" onclick="addOrder()">+ Add to Order Cart</button>
-                    <button class="btn-secondary" onclick="resetForm()">Clear Form</button>
+                    <button class="btn-primary" onclick="addOrder()">✅ Add to Order Cart</button>
+                    <button class="btn-secondary" onclick="resetForm()">🔄 Clear Form</button>
                 </div>
 
                 <!-- Summary Section -->
                 <div class="card">
-                    <h2>Summary</h2>
+                    <h2>📊 Summary</h2>
                     
                     <div class="stats-grid">
                         <div class="stat-box">
@@ -609,7 +624,7 @@
                             <td id="pendingCount">0</td>
                         </tr>
                         <tr>
-                            <td>Ordered</td>
+                            <td>Already Ordered</td>
                             <td id="orderedCount">0</td>
                         </tr>
                         <tr>
@@ -618,7 +633,7 @@
                         </tr>
                     </table>
 
-                    <h2 style="margin-top: 25px;">Activity Log</h2>
+                    <h2 style="margin-top: 25px;">📋 Activity Log</h2>
                     <div id="activityLog" style="min-height: 150px;">
                         <div class="empty-state">No activity yet</div>
                     </div>
@@ -627,7 +642,7 @@
 
             <!-- Orders Display -->
             <div class="card">
-                <h2>Today's Orders by Supplier</h2>
+                <h2>📦 Today's Orders by Supplier</h2>
                 <div id="ordersList" style="min-height: 200px;">
                     <div class="empty-state">No orders yet. Add your first order above!</div>
                 </div>
@@ -635,7 +650,7 @@
 
             <!-- WhatsApp Message -->
             <div class="card" id="whatsappSection" style="display: none;">
-                <h2>Daily WhatsApp Report</h2>
+                <h2>💬 Daily WhatsApp Report</h2>
                 <div class="message-box" id="whatsappMessage"></div>
                 <button class="btn-primary" onclick="copyMessage()">📋 Copy Message</button>
             </div>
@@ -651,18 +666,40 @@
             <div class="card">
                 <button class="btn-secondary" onclick="goToMain()" style="margin-bottom: 20px;">← Back to Orders</button>
                 
-                <h2 id="settingsTitle">Manage Suppliers</h2>
+                <h2 id="settingsTitle">⚙️ Manage Suppliers</h2>
 
-                <div class="form-group">
-                    <label id="settingsLabel">New Supplier Name</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="settingsInput" placeholder="Enter name" style="flex: 1;">
-                        <button class="btn-primary" onclick="addSettingsItem()" style="width: 120px;">Add</button>
+                <div id="supplierSettings">
+                    <div class="form-group">
+                        <label>New Supplier Name</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="supplierInput" placeholder="Enter name" style="flex: 1;">
+                            <button class="btn-primary" onclick="addSettingsItem('supplier')" style="width: 120px;">Add</button>
+                        </div>
                     </div>
+
+                    <h2 style="margin-top: 25px; margin-bottom: 15px;">📝 Current Suppliers</h2>
+                    <ul class="settings-list" id="suppliersList"></ul>
                 </div>
 
-                <h2 style="margin-top: 25px; margin-bottom: 15px;">Current List</h2>
-                <ul class="settings-list" id="settingsList"></ul>
+                <div id="productSettings" style="display: none;">
+                    <div class="form-group">
+                        <label>Select Supplier *</label>
+                        <select id="productSupplierSelect" onchange="loadProductsForSupplier()">
+                            <option value="">Choose Supplier</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Product Name</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="productInput" placeholder="Enter product name" style="flex: 1;">
+                            <button class="btn-primary" onclick="addSettingsItem('product')" style="width: 120px;">Add</button>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top: 25px; margin-bottom: 15px;">📝 Products for Selected Supplier</h2>
+                    <ul class="settings-list" id="productsList"></ul>
+                </div>
             </div>
         </div>
     </div>
@@ -678,17 +715,17 @@
             </div>
             <div class="modal-buttons">
                 <button class="modal-btn modal-btn-cancel" onclick="closeDuplicateModal()">Cancel</button>
-                <button class="modal-btn modal-btn-add" onclick="mergeDuplicate()">Add More</button>
+                <button class="modal-btn modal-btn-add" onclick="mergeDuplicate()">✅ Add More</button>
             </div>
         </div>
     </div>
 
     <footer>
-        <p>Order Tracker Pro v2.0 | All data stored locally in your browser | No internet required</p>
+        <p>Tools House - Order Management System | All data stored locally in your browser | No internet required</p>
     </footer>
 
     <script>
-        // Configuration - EDIT THESE
+        // Configuration
         let PRODUCTS = ['Cement', 'Steel Rods', 'Paint', 'Bricks', 'Sand', 'Gravel', 'Tiles', 'Lumber'];
         let SUPPLIERS = ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'];
         const UNITS = ['bags', 'meters', 'liters', 'pieces', 'kg', 'tons'];
@@ -707,6 +744,7 @@
         let activityLog = [];
         let duplicateData = null;
         let currentSettingsType = null;
+        let selectedSupplierForProducts = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -723,14 +761,15 @@
             document.getElementById('settingsPage').classList.add('active');
 
             if (type === 'supplier') {
-                document.getElementById('settingsTitle').textContent = 'Manage Suppliers';
-                document.getElementById('settingsLabel').textContent = 'New Supplier Name';
-                document.getElementById('settingsInput').placeholder = 'Enter supplier name';
+                document.getElementById('settingsTitle').textContent = '⚙️ Manage Suppliers';
+                document.getElementById('supplierSettings').style.display = 'block';
+                document.getElementById('productSettings').style.display = 'none';
                 loadSettingsList('supplier');
             } else {
-                document.getElementById('settingsTitle').textContent = 'Manage Products';
-                document.getElementById('settingsLabel').textContent = 'New Product Name';
-                document.getElementById('settingsInput').placeholder = 'Enter product name';
+                document.getElementById('settingsTitle').textContent = '⚙️ Manage Products';
+                document.getElementById('supplierSettings').style.display = 'none';
+                document.getElementById('productSettings').style.display = 'block';
+                populateProductSupplierSelect();
                 loadSettingsList('product');
             }
         }
@@ -739,25 +778,65 @@
             document.getElementById('settingsPage').classList.remove('active');
             document.getElementById('mainPage').classList.add('active');
             currentSettingsType = null;
+            selectedSupplierForProducts = null;
             populateSupplierDropdown();
             updateProductList();
             updateUI();
         }
 
-        function loadSettingsList(type) {
-            const list = document.getElementById('settingsList');
-            let items = type === 'supplier' ? SUPPLIERS : PRODUCTS;
-            
-            list.innerHTML = items.map(item => `
-                <li class="settings-item">
-                    <span class="settings-item-name">${item}</span>
-                    <button class="settings-item-remove" onclick="removeSettingsItem('${item}', '${type}')">Remove</button>
-                </li>
-            `).join('');
+        function populateProductSupplierSelect() {
+            const select = document.getElementById('productSupplierSelect');
+            select.innerHTML = '<option value="">Choose Supplier</option>' +
+                SUPPLIERS.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
-        function addSettingsItem() {
-            const input = document.getElementById('settingsInput');
+        function loadProductsForSupplier() {
+            const supplier = document.getElementById('productSupplierSelect').value;
+            selectedSupplierForProducts = supplier;
+            
+            if (!supplier) {
+                document.getElementById('productsList').innerHTML = '<div class="empty-state">Select a supplier first</div>';
+                return;
+            }
+
+            const products = supplierProducts[supplier] || [];
+            const list = document.getElementById('productsList');
+            
+            list.innerHTML = products.map(item => `
+                <li class="settings-item">
+                    <span class="settings-item-name">${item}</span>
+                    <button class="settings-item-remove" onclick="removeProductFromSupplier('${item}', '${supplier}')">Remove</button>
+                </li>
+            `).join('');
+
+            if (products.length === 0) {
+                list.innerHTML += '<div class="empty-state" style="padding: 15px;">No products for this supplier</div>';
+            }
+        }
+
+        function loadSettingsList(type) {
+            if (type === 'supplier') {
+                const list = document.getElementById('suppliersList');
+                list.innerHTML = SUPPLIERS.map(item => `
+                    <li class="settings-item">
+                        <span class="settings-item-name">${item}</span>
+                        <button class="settings-item-remove" onclick="removeSettingsItem('${item}', '${type}')">Remove</button>
+                    </li>
+                `).join('');
+            } else if (type === 'product' && selectedSupplierForProducts) {
+                loadProductsForSupplier();
+            }
+        }
+
+        function addSettingsItem(type) {
+            let input;
+            
+            if (type === 'supplier') {
+                input = document.getElementById('supplierInput');
+            } else {
+                input = document.getElementById('productInput');
+            }
+            
             const newItem = input.value.trim();
 
             if (!newItem) {
@@ -765,7 +844,7 @@
                 return;
             }
 
-            if (currentSettingsType === 'supplier') {
+            if (type === 'supplier') {
                 if (SUPPLIERS.includes(newItem)) {
                     alert('Supplier already exists');
                     return;
@@ -773,17 +852,21 @@
                 SUPPLIERS.push(newItem);
                 supplierProducts[newItem] = [];
                 addActivity(`Added supplier: ${newItem}`);
-            } else {
-                if (PRODUCTS.includes(newItem)) {
-                    alert('Product already exists');
+            } else if (type === 'product') {
+                if (!selectedSupplierForProducts) {
+                    alert('Please select a supplier first');
                     return;
                 }
-                PRODUCTS.push(newItem);
-                addActivity(`Added product: ${newItem}`);
+                if (supplierProducts[selectedSupplierForProducts].includes(newItem)) {
+                    alert('Product already exists for this supplier');
+                    return;
+                }
+                supplierProducts[selectedSupplierForProducts].push(newItem);
+                addActivity(`Added product: ${newItem} to ${selectedSupplierForProducts}`);
             }
 
             input.value = '';
-            loadSettingsList(currentSettingsType);
+            loadSettingsList(type);
             saveToStorage();
         }
 
@@ -792,11 +875,15 @@
                 SUPPLIERS = SUPPLIERS.filter(s => s !== item);
                 delete supplierProducts[item];
                 addActivity(`Removed supplier: ${item}`);
-            } else {
-                PRODUCTS = PRODUCTS.filter(p => p !== item);
-                addActivity(`Removed product: ${item}`);
             }
             loadSettingsList(type);
+            saveToStorage();
+        }
+
+        function removeProductFromSupplier(product, supplier) {
+            supplierProducts[supplier] = supplierProducts[supplier].filter(p => p !== product);
+            addActivity(`Removed product: ${product} from ${supplier}`);
+            loadProductsForSupplier();
             saveToStorage();
         }
 
@@ -843,7 +930,7 @@
                 return;
             }
 
-            // Check for duplicate - IGNORE PARTNER
+            // Check for duplicate
             const isDup = orders.some(o => 
                 o.supplier.toLowerCase() === supplier.toLowerCase() &&
                 o.product.toLowerCase() === product.toLowerCase() &&
@@ -959,7 +1046,7 @@
             }
 
             msg += `Total: ${orders.length} items from ${Object.keys(grouped).length} supplier(s)\n`;
-            msg += `---\n📱 Order Tracker Pro\n⏰ ${new Date().toLocaleString('en-IN')}`;
+            msg += `---\n🏗️ Tools House\n⏰ ${new Date().toLocaleString('en-IN')}`;
 
             return msg;
         }
@@ -972,7 +1059,6 @@
         }
 
         function updateUI() {
-            // Update summary
             const suppliers = new Set(orders.map(o => o.supplier)).size;
             document.getElementById('totalItems').textContent = orders.length;
             document.getElementById('totalSuppliers').textContent = suppliers;
@@ -980,7 +1066,6 @@
             document.getElementById('orderedCount').textContent = orders.filter(o => o.status === 'ordered').length;
             document.getElementById('deliveredCount').textContent = orders.filter(o => o.status === 'delivered').length;
 
-            // Update orders display - GROUPED BY SUPPLIER ONLY
             if (orders.length === 0) {
                 document.getElementById('ordersList').innerHTML = '<div class="empty-state">No orders yet. Add your first order above!</div>';
                 document.getElementById('whatsappSection').style.display = 'none';
@@ -1011,13 +1096,11 @@
                 }
                 document.getElementById('ordersList').innerHTML = html;
                 
-                // Update WhatsApp section
                 document.getElementById('whatsappMessage').textContent = generateWhatsAppMessage();
                 document.getElementById('whatsappSection').style.display = 'block';
                 document.getElementById('clearBtn').style.display = 'block';
             }
 
-            // Update activity log
             if (activityLog.length === 0) {
                 document.getElementById('activityLog').innerHTML = '<div class="empty-state">No activity yet</div>';
             } else {
