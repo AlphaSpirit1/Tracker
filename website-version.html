@@ -60,6 +60,51 @@
             opacity: 0.95;
         }
 
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .connection-status.connected {
+            color: var(--success-color);
+        }
+
+        .connection-status.disconnected {
+            color: var(--danger-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .connection-status.connected .status-dot {
+            background-color: var(--success-color);
+        }
+
+        .connection-status.disconnected .status-dot {
+            background-color: var(--danger-color);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         /* Main Grid */
         .main-grid {
             display: grid;
@@ -272,18 +317,17 @@
             border-bottom: none;
         }
 
-        .supplier-header {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-            font-size: 15px;
-        }
-
         .supplier-header-with-btn {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+        }
+
+        .supplier-header {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 15px;
         }
 
         .copy-btn {
@@ -371,23 +415,6 @@
             padding: 30px;
             color: var(--text-secondary);
             font-size: 14px;
-        }
-
-        /* Message Box */
-        .message-box {
-            background-color: var(--bg-light);
-            border: 2px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: var(--text-primary);
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            line-height: 1.5;
         }
 
         /* Modal */
@@ -546,6 +573,12 @@
             .copy-btn {
                 width: 100%;
             }
+
+            .connection-status {
+                top: 10px;
+                right: 10px;
+                font-size: 11px;
+            }
         }
 
         /* Footer */
@@ -560,6 +593,11 @@
     </style>
 </head>
 <body>
+    <div class="connection-status disconnected" id="connectionStatus">
+        <span class="status-dot"></span>
+        <span id="statusText">Loading...</span>
+    </div>
+
     <header>
         <div class="container">
             <h1>🏗️ Tools House - Order Management</h1>
@@ -743,133 +781,143 @@
     </div>
 
     <footer>
-        <p>Tools House - Order Management System | Using IndexedDB for secure data storage | No internet required</p>
+        <p>Tools House - Order Management System | Data synced via JSON database on GitHub | No internet required after first load</p>
     </footer>
 
     <script>
-        // IndexedDB Configuration
-        const DB_NAME = 'ToolsHouseDB';
-        const DB_VERSION = 1;
-        const STORES = {
-            orders: 'orders',
-            suppliers: 'suppliers',
-            products: 'products',
-            supplierProducts: 'supplierProducts',
-            activityLog: 'activityLog'
+        // Database Configuration
+        const DB_FILE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/database.json';
+        const GITHUB_API_URL = 'https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/contents/database.json';
+        const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN'; // Generate from GitHub Settings
+
+        let localData = {
+            orders: [],
+            suppliers: ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'],
+            supplierProducts: {
+                'ABC Hardware': ['Cement', 'Steel Rods', 'Bricks'],
+                'XYZ Supplies': ['Paint', 'Lumber', 'Tiles'],
+                'BuildCo Materials': ['Sand', 'Gravel', 'Cement'],
+                'ProBuild Store': ['Cement', 'Bricks', 'Tiles', 'Paint']
+            },
+            activityLog: []
         };
 
-        let db;
-
-        // Initialize IndexedDB
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve();
-                };
-
-                request.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    
-                    if (!db.objectStoreNames.contains(STORES.orders)) {
-                        db.createObjectStore(STORES.orders, { keyPath: 'id' });
-                    }
-                    if (!db.objectStoreNames.contains(STORES.suppliers)) {
-                        db.createObjectStore(STORES.suppliers, { keyPath: 'name' });
-                    }
-                    if (!db.objectStoreNames.contains(STORES.products)) {
-                        db.createObjectStore(STORES.products, { keyPath: 'name' });
-                    }
-                    if (!db.objectStoreNames.contains(STORES.supplierProducts)) {
-                        db.createObjectStore(STORES.supplierProducts, { keyPath: 'id', autoIncrement: true });
-                    }
-                    if (!db.objectStoreNames.contains(STORES.activityLog)) {
-                        db.createObjectStore(STORES.activityLog, { keyPath: 'id', autoIncrement: true });
-                    }
-                };
-            });
-        }
-
-        // Database operations
-        async function addToStore(storeName, data) {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const store = transaction.objectStore(storeName);
-            return new Promise((resolve, reject) => {
-                const request = store.add(data);
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function updateStore(storeName, data) {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const store = transaction.objectStore(storeName);
-            return new Promise((resolve, reject) => {
-                const request = store.put(data);
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function getFromStore(storeName) {
-            const transaction = db.transaction([storeName], 'readonly');
-            const store = transaction.objectStore(storeName);
-            return new Promise((resolve, reject) => {
-                const request = store.getAll();
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function deleteFromStore(storeName, key) {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const store = transaction.objectStore(storeName);
-            return new Promise((resolve, reject) => {
-                const request = store.delete(key);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function clearStore(storeName) {
-            const transaction = db.transaction([storeName], 'readwrite');
-            const store = transaction.objectStore(storeName);
-            return new Promise((resolve, reject) => {
-                const request = store.clear();
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Configuration
-        let SUPPLIERS = ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'];
         const UNITS = ['bags', 'meters', 'liters', 'pieces', 'kg', 'tons'];
         const PARTNERS = ['Partner A', 'Partner B', 'Partner C'];
-
-        let supplierProducts = {
-            'ABC Hardware': ['Cement', 'Steel Rods', 'Bricks'],
-            'XYZ Supplies': ['Paint', 'Lumber', 'Tiles'],
-            'BuildCo Materials': ['Sand', 'Gravel', 'Cement'],
-            'ProBuild Store': ['Cement', 'Bricks', 'Tiles', 'Paint']
-        };
 
         let orders = [];
         let activityLog = [];
         let duplicateData = null;
         let currentSettingsType = null;
         let selectedSupplierForProducts = null;
+        let isConnected = false;
+        let syncInProgress = false;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
-            await initDB();
-            await loadFromDB();
+            updateConnectionStatus();
+            await loadFromGitHub();
             populateSupplierDropdown();
             updateProductList();
             updateUI();
+            setInterval(syncWithGitHub, 5000); // Auto-sync every 5 seconds
         });
+
+        // Connection Status
+        function updateConnectionStatus() {
+            const status = document.getElementById('connectionStatus');
+            const text = document.getElementById('statusText');
+            
+            if (isConnected) {
+                status.classList.remove('disconnected');
+                status.classList.add('connected');
+                text.textContent = '✓ Synced';
+            } else {
+                status.classList.remove('connected');
+                status.classList.add('disconnected');
+                text.textContent = syncInProgress ? '⟳ Syncing...' : '⚠ Offline';
+            }
+        }
+
+        // Load from GitHub
+        async function loadFromGitHub() {
+            try {
+                const response = await fetch(DB_FILE_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    localData = data;
+                    orders = data.orders || [];
+                    activityLog = data.activityLog || [];
+                    isConnected = true;
+                } else {
+                    console.log('Using local data - database.json not found on GitHub');
+                    isConnected = false;
+                }
+            } catch (error) {
+                console.log('Offline mode - using local data:', error.message);
+                isConnected = false;
+            }
+            updateConnectionStatus();
+        }
+
+        // Sync to GitHub
+        async function syncWithGitHub() {
+            if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN') {
+                return;
+            }
+
+            syncInProgress = true;
+            updateConnectionStatus();
+
+            try {
+                // Get current file SHA for update
+                let sha = null;
+                try {
+                    const headResponse = await fetch(GITHUB_API_URL, {
+                        headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                    });
+                    if (headResponse.ok) {
+                        const headData = await headResponse.json();
+                        sha = headData.sha;
+                    }
+                } catch (e) {
+                    console.log('Could not get file SHA');
+                }
+
+                const updatedData = {
+                    orders,
+                    suppliers: localData.suppliers,
+                    supplierProducts: localData.supplierProducts,
+                    activityLog
+                };
+
+                const response = await fetch(GITHUB_API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Auto-sync: ${new Date().toLocaleString('en-IN')}`,
+                        content: btoa(JSON.stringify(updatedData, null, 2)),
+                        sha: sha
+                    })
+                });
+
+                if (response.ok) {
+                    isConnected = true;
+                } else {
+                    console.log('Sync failed, continuing with local data');
+                    isConnected = false;
+                }
+            } catch (error) {
+                console.log('Sync error, continuing with local data:', error.message);
+                isConnected = false;
+            }
+
+            syncInProgress = false;
+            updateConnectionStatus();
+        }
 
         // PAGE NAVIGATION
         function goToSettings(type) {
@@ -904,7 +952,7 @@
         function populateProductSupplierSelect() {
             const select = document.getElementById('productSupplierSelect');
             select.innerHTML = '<option value="">Choose Supplier</option>' +
-                SUPPLIERS.map(s => `<option value="${s}">${s}</option>`).join('');
+                localData.suppliers.map(s => `<option value="${s}">${s}</option>`).join('');
         }
 
         function loadProductsForSupplier() {
@@ -916,7 +964,7 @@
                 return;
             }
 
-            const products = supplierProducts[supplier] || [];
+            const products = localData.supplierProducts[supplier] || [];
             const list = document.getElementById('productsList');
             
             list.innerHTML = products.map(item => `
@@ -934,7 +982,7 @@
         function loadSettingsList(type) {
             if (type === 'supplier') {
                 const list = document.getElementById('suppliersList');
-                list.innerHTML = SUPPLIERS.map(item => `
+                list.innerHTML = localData.suppliers.map(item => `
                     <li class="settings-item">
                         <span class="settings-item-name">${item}</span>
                         <button class="settings-item-remove" onclick="removeSettingsItem('${item}', '${type}')">Remove</button>
@@ -962,46 +1010,46 @@
             }
 
             if (type === 'supplier') {
-                if (SUPPLIERS.includes(newItem)) {
+                if (localData.suppliers.includes(newItem)) {
                     alert('Supplier already exists');
                     return;
                 }
-                SUPPLIERS.push(newItem);
-                supplierProducts[newItem] = [];
+                localData.suppliers.push(newItem);
+                localData.supplierProducts[newItem] = [];
                 addActivity(`Added supplier: ${newItem}`);
             } else if (type === 'product') {
                 if (!selectedSupplierForProducts) {
                     alert('Please select a supplier first');
                     return;
                 }
-                if (supplierProducts[selectedSupplierForProducts].includes(newItem)) {
+                if (localData.supplierProducts[selectedSupplierForProducts].includes(newItem)) {
                     alert('Product already exists for this supplier');
                     return;
                 }
-                supplierProducts[selectedSupplierForProducts].push(newItem);
+                localData.supplierProducts[selectedSupplierForProducts].push(newItem);
                 addActivity(`Added product: ${newItem} to ${selectedSupplierForProducts}`);
             }
 
             input.value = '';
             loadSettingsList(type);
-            saveToDB();
+            syncWithGitHub();
         }
 
         function removeSettingsItem(item, type) {
             if (type === 'supplier') {
-                SUPPLIERS = SUPPLIERS.filter(s => s !== item);
-                delete supplierProducts[item];
+                localData.suppliers = localData.suppliers.filter(s => s !== item);
+                delete localData.supplierProducts[item];
                 addActivity(`Removed supplier: ${item}`);
             }
             loadSettingsList(type);
-            saveToDB();
+            syncWithGitHub();
         }
 
         function removeProductFromSupplier(product, supplier) {
-            supplierProducts[supplier] = supplierProducts[supplier].filter(p => p !== product);
+            localData.supplierProducts[supplier] = localData.supplierProducts[supplier].filter(p => p !== product);
             addActivity(`Removed product: ${product} from ${supplier}`);
             loadProductsForSupplier();
-            saveToDB();
+            syncWithGitHub();
         }
 
         // POPULATE DROPDOWNS
@@ -1009,7 +1057,7 @@
             const select = document.getElementById('supplier');
             const current = select.value;
             select.innerHTML = '<option value="">Select Supplier</option>' +
-                SUPPLIERS.map(s => `<option value="${s}">${s}</option>`).join('');
+                localData.suppliers.map(s => `<option value="${s}">${s}</option>`).join('');
             select.value = current;
         }
 
@@ -1023,7 +1071,7 @@
                 return;
             }
 
-            const products = supplierProducts[supplier] || [];
+            const products = localData.supplierProducts[supplier] || [];
             select.innerHTML = '<option value="">Select Product</option>' +
                 products.map(p => `<option value="${p}">${p}</option>`).join('');
             
@@ -1089,6 +1137,7 @@
             addActivity(`Added ${quantity} ${unit} of ${product} from ${supplier}`);
             resetForm();
             updateUI();
+            syncWithGitHub();
         }
 
         function mergeDuplicate() {
@@ -1103,6 +1152,7 @@
             closeDuplicateModal();
             resetForm();
             updateUI();
+            syncWithGitHub();
         }
 
         function closeDuplicateModal() {
@@ -1116,6 +1166,7 @@
                 orders = orders.filter(o => o.id !== id);
                 addActivity(`Removed ${order.product} from ${order.supplier}`);
                 updateUI();
+                syncWithGitHub();
             }
         }
 
@@ -1134,6 +1185,7 @@
                 orders = [];
                 addActivity('All orders cleared');
                 updateUI();
+                syncWithGitHub();
             }
         }
 
@@ -1223,49 +1275,6 @@
                     </div>`;
                 });
                 document.getElementById('activityLog').innerHTML = html;
-            }
-
-            saveToDB();
-        }
-
-        async function saveToDB() {
-            try {
-                await clearStore(STORES.orders);
-                for (const order of orders) {
-                    await addToStore(STORES.orders, order);
-                }
-                
-                await clearStore(STORES.activityLog);
-                for (const log of activityLog) {
-                    await addToStore(STORES.activityLog, log);
-                }
-                
-                await updateStore(STORES.supplierProducts, {
-                    id: 'main',
-                    suppliers: SUPPLIERS,
-                    mapping: supplierProducts
-                });
-            } catch (error) {
-                console.error('Error saving to DB:', error);
-            }
-        }
-
-        async function loadFromDB() {
-            try {
-                const savedOrders = await getFromStore(STORES.orders);
-                orders = savedOrders || [];
-
-                const savedActivity = await getFromStore(STORES.activityLog);
-                activityLog = savedActivity || [];
-
-                const savedMapping = await getFromStore(STORES.supplierProducts);
-                if (savedMapping && savedMapping.length > 0) {
-                    const data = savedMapping[0];
-                    SUPPLIERS = data.suppliers || SUPPLIERS;
-                    supplierProducts = data.mapping || supplierProducts;
-                }
-            } catch (error) {
-                console.error('Error loading from DB:', error);
             }
         }
     </script>
