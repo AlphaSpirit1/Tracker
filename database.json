@@ -1,1 +1,17 @@
+{
+  "orders": [],
+  "suppliers": [
+    "ABC Hardware",
+    "XYZ Supplies",
+    "BuildCo Materials",
+    "ProBuild Store"
+  ],
+  "supplierProducts": {
+    "ABC Hardware": ["Cement", "Steel Rods", "Bricks"],
+    "XYZ Supplies": ["Paint", "Lumber", "Tiles"],
+    "BuildCo Materials": ["Sand", "Gravel", "Cement"],
+    "ProBuild Store": ["Cement", "Bricks", "Tiles", "Paint"]
+  },
+  "activityLog": []
+}
 
