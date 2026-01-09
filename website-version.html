@@ -279,6 +279,25 @@
             font-size: 15px;
         }
 
+        .supplier-header-with-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
         /* Stats Grid */
         .stats-grid {
             display: grid;
@@ -517,6 +536,16 @@
             .top-buttons {
                 flex-direction: column;
             }
+
+            .supplier-header-with-btn {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .copy-btn {
+                width: 100%;
+            }
         }
 
         /* Footer */
@@ -648,13 +677,6 @@
                 </div>
             </div>
 
-            <!-- WhatsApp Message -->
-            <div class="card" id="whatsappSection" style="display: none;">
-                <h2>💬 Daily WhatsApp Report</h2>
-                <div class="message-box" id="whatsappMessage"></div>
-                <button class="btn-primary" onclick="copyMessage()">📋 Copy Message</button>
-            </div>
-
             <!-- Clear All Button -->
             <div style="text-align: center; margin: 30px 0;">
                 <button class="btn-secondary" onclick="clearAllOrders()" id="clearBtn" style="max-width: 300px; display: none;">🗑️ Clear All Orders</button>
@@ -721,17 +743,112 @@
     </div>
 
     <footer>
-        <p>Tools House - Order Management System | All data stored locally in your browser | No internet required</p>
+        <p>Tools House - Order Management System | Using IndexedDB for secure data storage | No internet required</p>
     </footer>
 
     <script>
+        // IndexedDB Configuration
+        const DB_NAME = 'ToolsHouseDB';
+        const DB_VERSION = 1;
+        const STORES = {
+            orders: 'orders',
+            suppliers: 'suppliers',
+            products: 'products',
+            supplierProducts: 'supplierProducts',
+            activityLog: 'activityLog'
+        };
+
+        let db;
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve();
+                };
+
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    
+                    if (!db.objectStoreNames.contains(STORES.orders)) {
+                        db.createObjectStore(STORES.orders, { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains(STORES.suppliers)) {
+                        db.createObjectStore(STORES.suppliers, { keyPath: 'name' });
+                    }
+                    if (!db.objectStoreNames.contains(STORES.products)) {
+                        db.createObjectStore(STORES.products, { keyPath: 'name' });
+                    }
+                    if (!db.objectStoreNames.contains(STORES.supplierProducts)) {
+                        db.createObjectStore(STORES.supplierProducts, { keyPath: 'id', autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains(STORES.activityLog)) {
+                        db.createObjectStore(STORES.activityLog, { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+            });
+        }
+
+        // Database operations
+        async function addToStore(storeName, data) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.add(data);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function updateStore(storeName, data) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.put(data);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getFromStore(storeName) {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteFromStore(storeName, key) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.delete(key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function clearStore(storeName) {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.clear();
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
         // Configuration
-        let PRODUCTS = ['Cement', 'Steel Rods', 'Paint', 'Bricks', 'Sand', 'Gravel', 'Tiles', 'Lumber'];
         let SUPPLIERS = ['ABC Hardware', 'XYZ Supplies', 'BuildCo Materials', 'ProBuild Store'];
         const UNITS = ['bags', 'meters', 'liters', 'pieces', 'kg', 'tons'];
         const PARTNERS = ['Partner A', 'Partner B', 'Partner C'];
 
-        // Supplier to products mapping
         let supplierProducts = {
             'ABC Hardware': ['Cement', 'Steel Rods', 'Bricks'],
             'XYZ Supplies': ['Paint', 'Lumber', 'Tiles'],
@@ -739,7 +856,6 @@
             'ProBuild Store': ['Cement', 'Bricks', 'Tiles', 'Paint']
         };
 
-        // State
         let orders = [];
         let activityLog = [];
         let duplicateData = null;
@@ -747,8 +863,9 @@
         let selectedSupplierForProducts = null;
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFromStorage();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initDB();
+            await loadFromDB();
             populateSupplierDropdown();
             updateProductList();
             updateUI();
@@ -867,7 +984,7 @@
 
             input.value = '';
             loadSettingsList(type);
-            saveToStorage();
+            saveToDB();
         }
 
         function removeSettingsItem(item, type) {
@@ -877,14 +994,14 @@
                 addActivity(`Removed supplier: ${item}`);
             }
             loadSettingsList(type);
-            saveToStorage();
+            saveToDB();
         }
 
         function removeProductFromSupplier(product, supplier) {
             supplierProducts[supplier] = supplierProducts[supplier].filter(p => p !== product);
             addActivity(`Removed product: ${product} from ${supplier}`);
             loadProductsForSupplier();
-            saveToStorage();
+            saveToDB();
         }
 
         // POPULATE DROPDOWNS
@@ -930,7 +1047,6 @@
                 return;
             }
 
-            // Check for duplicate
             const isDup = orders.some(o => 
                 o.supplier.toLowerCase() === supplier.toLowerCase() &&
                 o.product.toLowerCase() === product.toLowerCase() &&
@@ -1027,34 +1143,30 @@
             if (activityLog.length > 5) activityLog.pop();
         }
 
-        function generateWhatsAppMessage() {
-            const grouped = {};
-            orders.forEach(o => {
-                if (!grouped[o.supplier]) grouped[o.supplier] = [];
-                grouped[o.supplier].push(o);
+        function generateWhatsAppMessageForSupplier(supplier) {
+            const supplierOrders = orders.filter(o => o.supplier.toLowerCase() === supplier.toLowerCase());
+            
+            if (supplierOrders.length === 0) return '';
+
+            let msg = `📦 MATERIAL ORDER FOR ${supplier.toUpperCase()} - ${new Date().toLocaleDateString('en-IN')}\n\n`;
+            
+            supplierOrders.forEach(o => {
+                const notes = o.notes ? ` (${o.notes})` : '';
+                msg += `• ${o.product}: ${o.quantity} ${o.unit}${notes}\n`;
             });
 
-            let msg = `📦 DAILY MATERIAL ORDER - ${new Date().toLocaleDateString('en-IN')}\n\n`;
-            
-            for (const [sup, supOrders] of Object.entries(grouped)) {
-                msg += `${sup}\n`;
-                supOrders.forEach(o => {
-                    const notes = o.notes ? ` (${o.notes})` : '';
-                    msg += `• ${o.product}: ${o.quantity} ${o.unit}${notes}\n`;
-                });
-                msg += '\n';
-            }
-
-            msg += `Total: ${orders.length} items from ${Object.keys(grouped).length} supplier(s)\n`;
+            msg += `\nTotal: ${supplierOrders.length} item(s)\n`;
             msg += `---\n🏗️ Tools House\n⏰ ${new Date().toLocaleString('en-IN')}`;
 
             return msg;
         }
 
-        function copyMessage() {
-            const msg = generateWhatsAppMessage();
+        function copySupplierMessage(supplier) {
+            const msg = generateWhatsAppMessageForSupplier(supplier);
             navigator.clipboard.writeText(msg).then(() => {
-                alert('Message copied to clipboard!');
+                alert(`Message for ${supplier} copied to clipboard!`);
+            }).catch(() => {
+                alert('Failed to copy message');
             });
         }
 
@@ -1068,7 +1180,6 @@
 
             if (orders.length === 0) {
                 document.getElementById('ordersList').innerHTML = '<div class="empty-state">No orders yet. Add your first order above!</div>';
-                document.getElementById('whatsappSection').style.display = 'none';
                 document.getElementById('clearBtn').style.display = 'none';
             } else {
                 const grouped = {};
@@ -1080,7 +1191,10 @@
                 let html = '';
                 for (const [sup, supOrders] of Object.entries(grouped)) {
                     html += `<div class="supplier-group">
-                        <div class="supplier-header">📍 ${sup}</div>`;
+                        <div class="supplier-header-with-btn">
+                            <span class="supplier-header">📍 ${sup}</span>
+                            <button class="copy-btn" onclick="copySupplierMessage('${sup}')">📋 Copy for ${sup}</button>
+                        </div>`;
                     supOrders.forEach(o => {
                         const notes = o.notes ? `<p>📝 ${o.notes}</p>` : '';
                         html += `<div class="order-item ${o.status === 'delivered' ? 'delivered' : ''}">
@@ -1095,9 +1209,6 @@
                     html += '</div>';
                 }
                 document.getElementById('ordersList').innerHTML = html;
-                
-                document.getElementById('whatsappMessage').textContent = generateWhatsAppMessage();
-                document.getElementById('whatsappSection').style.display = 'block';
                 document.getElementById('clearBtn').style.display = 'block';
             }
 
@@ -1114,29 +1225,48 @@
                 document.getElementById('activityLog').innerHTML = html;
             }
 
-            saveToStorage();
+            saveToDB();
         }
 
-        function saveToStorage() {
-            localStorage.setItem('orders', JSON.stringify(orders));
-            localStorage.setItem('activityLog', JSON.stringify(activityLog));
-            localStorage.setItem('suppliers', JSON.stringify(SUPPLIERS));
-            localStorage.setItem('products', JSON.stringify(PRODUCTS));
-            localStorage.setItem('supplierProducts', JSON.stringify(supplierProducts));
+        async function saveToDB() {
+            try {
+                await clearStore(STORES.orders);
+                for (const order of orders) {
+                    await addToStore(STORES.orders, order);
+                }
+                
+                await clearStore(STORES.activityLog);
+                for (const log of activityLog) {
+                    await addToStore(STORES.activityLog, log);
+                }
+                
+                await updateStore(STORES.supplierProducts, {
+                    id: 'main',
+                    suppliers: SUPPLIERS,
+                    mapping: supplierProducts
+                });
+            } catch (error) {
+                console.error('Error saving to DB:', error);
+            }
         }
 
-        function loadFromStorage() {
-            const saved = localStorage.getItem('orders');
-            const activity = localStorage.getItem('activityLog');
-            const suppliers = localStorage.getItem('suppliers');
-            const products = localStorage.getItem('products');
-            const supplierProds = localStorage.getItem('supplierProducts');
+        async function loadFromDB() {
+            try {
+                const savedOrders = await getFromStore(STORES.orders);
+                orders = savedOrders || [];
 
-            if (saved) orders = JSON.parse(saved);
-            if (activity) activityLog = JSON.parse(activity);
-            if (suppliers) SUPPLIERS = JSON.parse(suppliers);
-            if (products) PRODUCTS = JSON.parse(products);
-            if (supplierProds) supplierProducts = JSON.parse(supplierProds);
+                const savedActivity = await getFromStore(STORES.activityLog);
+                activityLog = savedActivity || [];
+
+                const savedMapping = await getFromStore(STORES.supplierProducts);
+                if (savedMapping && savedMapping.length > 0) {
+                    const data = savedMapping[0];
+                    SUPPLIERS = data.suppliers || SUPPLIERS;
+                    supplierProducts = data.mapping || supplierProducts;
+                }
+            } catch (error) {
+                console.error('Error loading from DB:', error);
+            }
         }
     </script>
 </body>
